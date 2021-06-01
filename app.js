@@ -1,12 +1,18 @@
 'use strict'
 
 const fastify = require('fastify')
+const browsing = require('./plugins/browsing')
+
+
 
 const build  = function (opts = {}) {
 
   const app = fastify(opts)
   app.get('/', async (req, rep) => {
-    return { hello: 'world' }
+
+    const subjects = await browsing()
+
+    return { hello: subjects}
   })
 
   return app

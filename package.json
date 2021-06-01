@@ -19,7 +19,7 @@
   "scripts": {
     "test": "tap \"test/**/*.test.js\"",
     "start": "fastify start -l info app.js",
-    "dev": "fastify start -w -l info -P app.js"
+    "dev": "nodemon server.js"
   },
   "keywords": [],
   "dependencies": {
@@ -27,10 +27,12 @@
     "fastify-autoload": "^3.3.1",
     "fastify-cli": "^2.13.0",
     "fastify-plugin": "^3.0.0",
-    "fastify-sensible": "^3.1.0"
+    "fastify-sensible": "^3.1.0",
+    "node-fetch": "^2.6.1"
   },
   "devDependencies": {
-    "pino-pretty": "^5.0.1",
+    "nodemon": "^2.0.7",
+    "pino-pretty": "^5.0.2",
     "tap": "^15.0.9"
   }
 }
