@@ -23,7 +23,7 @@ const fetchData = async (uri) => {
   return data;
 };
 
-const getMerdier = async (rows = 1, page = 1) => {
+const getRawPage = async (rows = 1, page = 1) => {
   const uri = formatUri(rows, page);
   const items = await fetchData(uri);
 
@@ -36,24 +36,28 @@ const getRowsFromPage = (page) => {
 };
 
 const listSubject = async () => {
-  const fileMetadata = await getMerdier();
+  const fileMetadata = await getRawPage();
 
+  // calculate pages to iterate
   const numFound = fileMetadata.response.numFound;
-  const rowsNumber = 100;
-
+  const rowsNumber = 1000;
   const pagesNumber = Math.floor(numFound / rowsNumber);
+
   let items = [];
 
-  //  for eeach page I load 100 rows
-  for (let i = 0; i < 3; i++) {
+  //  for each page I load 100 rows
+  for (let i = 0; i < 2; i++) {
     console.log("page number : ", i);
 
-    const page = await getMerdier(rowsNumber, i);
+    const page = await getRawPage(rowsNumber, i);
+    console.log("page =====> ", page);
     const doc = getRowsFromPage(page);
+    console.log("doc =====> ", doc);
     const subjects = mergeStringArray(doc);
-
+    console.log("subjects =====> ", subjects);
     items = items.concat(subjects);
   }
+  console.log("concatItems =======> ", items);
 
   const uniq = countDuplicate(items);
 
@@ -61,19 +65,18 @@ const listSubject = async () => {
 };
 
 const countDuplicate = (tab) => {
-  const result = [];
-  for (let i = 0; i < tab.length; i++) {
-    const obj = {
-      count: 1,
-      name: tab[i],
-    };
-    for (let j = i + 1; j < tab.length; j++) {
-      if (tab[j] === tab[i]) {
-        obj.count += 1;
-      }
-    }
+  const counts = {};
+  const result = []
+  tab.forEach((item) => {
+    counts[item] = (counts[item] || 0) + 1;
+  });
 
-    result.push(obj);
+  for (let key in counts) {
+    const obj = {
+      name : key,
+      count: counts[key]
+    }
+    result.push(obj)
   }
 
   return result;
@@ -158,11 +161,13 @@ function sortArray(tab, comparator = "decr") {
 // &fl%5B%5D= ---> ajoute un field a retourner
 const main = async () => {
   // await listSubjectStatic(staticData.data);
-  // const result = listSubject();
+  const result = await listSubject();
 
-  const result = sortArray(JSON.parse(unsortedSubjectSample.data), "Z-A");
-
+  // const result = sortArray(JSON.parse(unsortedSubjectSample.data), "Z-A");
+  console.log(result);
   return result;
 };
 
-module.exports = main;
+main();
+
+// module.exports = main;
