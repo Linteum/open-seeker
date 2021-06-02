@@ -1,16 +1,21 @@
 // processus censer stocker des données en base
+const fetch = require("node-fetch");
+const promFs = require('fs').promises
+const path = require('path')
 
 const rawDataSample = require("../samples/getSubjectFromAudioFile");
 const unsortedSubjectSample = require("../samples/unsortedSubjects");
+const dbFormat = require('./strToObjFormat')
 
-const fetch = require("node-fetch");
 const fields = ["identifier", "subject", "type"];
 
-const formatUri = (rows, page) => {
+const rowsNumber = 100;
+
+const formatQueryOnlyAudioSubject = (pageNum = 1) => {
   const baseUrl = "https://archive.org/advancedsearch.php";
   const query = `mediatype:audio+AND+_exists_:subject`;
   const returnedFields = fields.map((field) => `&fl[]=${field}`).join("");
-  const queryConfig = `&rows=${rows}&page=${page}&output=json&save=yes`;
+  const queryConfig = `&rows=${rowsNumber}&page=${pageNum}&output=json&save=yes`;
 
   const uri = encodeURI(`${baseUrl}?q=${query}${returnedFields}${queryConfig}`);
 
@@ -23,16 +28,28 @@ const fetchData = async (uri) => {
   return data;
 };
 
-const getRawPage = async (rows = 1, page = 1) => {
-  const uri = formatUri(rows, page);
+const getRawPage = async (pageObject) => {
+  const uri = formatQueryOnlyAudioSubject(pageObject);
   const items = await fetchData(uri);
 
   return items;
 };
 
-const getRowsFromPage = (page) => {
-  const docs = page.response.docs.map((doc) => doc.subject);
+const getRowsFromPage = (pageObject) => {
+  const docs = pageObject.response.docs.map((doc) => doc.subject);
   return docs;
+};
+
+const convRawPageToSubjects = async (pageNum) => {
+  const page = await getRawPage(pageNum);
+  const doc = getRowsFromPage(page);
+  const subjects = mergeStringArray(doc);
+
+  return subjects;
+};
+
+const createArrayFromNothing = (length) => {
+  return Array.from({ length: length }, (_, i) => i + 1);
 };
 
 const listSubject = async () => {
@@ -40,24 +57,23 @@ const listSubject = async () => {
 
   // calculate pages to iterate
   const numFound = fileMetadata.response.numFound;
-  const rowsNumber = 1000;
-  const pagesNumber = Math.floor(numFound / rowsNumber);
+
+  let pageDivider = 100;
+  let pageCount = Math.floor(numFound / (rowsNumber * pageDivider));
+  console.log("pages : ", pageCount);
 
   let items = [];
+  const pageNumArray = createArrayFromNothing(pageDivider);
 
-  //  for each page I load 100 rows
-  for (let i = 0; i < 2; i++) {
-    console.log("page number : ", i);
+  const subjects = await Promise.all(
+    pageNumArray.map((pn) => {
+      return convRawPageToSubjects(pn);
+    })
+  );
 
-    const page = await getRawPage(rowsNumber, i);
-    console.log("page =====> ", page);
-    const doc = getRowsFromPage(page);
-    console.log("doc =====> ", doc);
-    const subjects = mergeStringArray(doc);
-    console.log("subjects =====> ", subjects);
-    items = items.concat(subjects);
+  for (let sub of subjects) {
+    items = items.concat(sub);
   }
-  console.log("concatItems =======> ", items);
 
   const uniq = countDuplicate(items);
 
@@ -66,17 +82,17 @@ const listSubject = async () => {
 
 const countDuplicate = (tab) => {
   const counts = {};
-  const result = []
+  const result = [];
   tab.forEach((item) => {
     counts[item] = (counts[item] || 0) + 1;
   });
 
   for (let key in counts) {
     const obj = {
-      name : key,
-      count: counts[key]
-    }
-    result.push(obj)
+      name: key,
+      count: counts[key],
+    };
+    result.push(obj);
   }
 
   return result;
@@ -158,14 +174,40 @@ function sortArray(tab, comparator = "decr") {
       return tab.sort(sortMethods.decreasing);
   }
 }
+
+async function updateAndWriteInBase (newArray, filePath, options =  {encoding : "utf-8"}) {
+
+  const jsonBase =await  promFs.readFile(path.resolve(filePath), {encoding : options.encoding})
+  const base = JSON.parse(jsonBase)
+
+  // console.log()
+  if (base.audioTopics.length < 1 ) {
+    base.audioTopics = newArray
+  }  
+
+  await promFs.writeFile(filePath, JSON.stringify(base))
+  
+}
+
 // &fl%5B%5D= ---> ajoute un field a retourner
 const main = async () => {
-  // await listSubjectStatic(staticData.data);
-  const result = await listSubject();
+  console.time("main");
 
-  // const result = sortArray(JSON.parse(unsortedSubjectSample.data), "Z-A");
-  console.log(result);
-  return result;
+  const sortedObjects = await listSubject();
+
+  const sortedArray = sortArray(sortedObjects);
+
+  updateAndWriteInBase(sortedArray, 'MockDatabase.json')
+
+
+
+  // const formatedData = dbFormat(sortedArray)
+  // console.log(formatedData);
+
+
+
+  console.timeEnd("main");
+  // return result;
 };
 
 main();
