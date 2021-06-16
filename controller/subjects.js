@@ -1,25 +1,24 @@
 const path = require("path");
 const Datastore = require("nedb"),
   db = new Datastore({
-    filename: path.resolve("./datastore.db"),
+    filename: path.resolve("./databases/datastore.db"),
     autoload: true,
   });
 
-db.ensureIndex({fieldName: 'subject', unique:true})
-
+db.ensureIndex({ fieldName: "subject", unique: true });
 
 // console.log(db)
 // POST add subjects from /api/subjects
 const addSubject = (subject) => {
   return new Promise((resolve, reject) => {
-    db.insert({subject: subject}, (err, newDoc) => {
+    db.insert({ subject: subject }, (err, newDoc) => {
       if (err) {
         if (err.errorType === "uniqueViolated") {
           return resolve(err.message);
         }
         return reject(err);
       }
-      console.log(newDoc);
+      // console.log(newDoc);
       return resolve(newDoc);
     });
   });
@@ -37,14 +36,18 @@ const getAllSubjects = async () => {
 };
 
 // GET one subjects from /api/subjects
-const getSubjects = async (searchedString) => {
+const getSubjects = async (searchString) => {
   return new Promise((resolve, reject) => {
-    const regex = new RegExp(`${searchedString}`.trim());
-    console.log(regex)
-    db.find({ subject: regex }, (err, docs) => {
-      if (err) return reject(err);
+    const regex = new RegExp(searchString.trim());
+    
+    console.log(regex);
+    
 
+    db.find({ subject: regex },{}, (err, docs) => {
+
+      if (err) return reject(err);
       return resolve(docs);
+
     });
   });
 };

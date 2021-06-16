@@ -1,49 +1,29 @@
 // processus censer stocker des données en base
 
-const { addSubject } = require("../controller/subjects");
-
-const listSubject = async () => {
-  
-
-  // calculate pages to iterate
-  
-};
+const { addSubject, getAllSubjects } = require("../controller/subjects");
+const {
+  mergeItemsFromRaw,
+} = require("../utils/arrayUtils");
 
 // &fl%5B%5D= ---> ajoute un field a retourner
-const main = async () => {
+const main = async (cursor = '') => {
   console.time("main");
-  const fileMetadata = await getRawPage({rows:1});
 
-  const numFound = fileMetadata.response.numFound;
+  const mergedItems = await mergeItemsFromRaw(cursor);
 
-  let pageCount = Math.floor(numFound / rowsNumber);
-  pageCount = 5;
-
-  let items = [];
-  const pages = createArrayFromInt(pageCount);
-
-  for (let pageNum of pages) {
-    const page = await getRawPage(pageNum);
-    const subjects = convRawPageToSubjects(page);
-    console.log(subjects);
-    for (let sub of subjects) {
-      items = items.concat(sub);
-    }
-  }
-
-  
-
-  // const unsortedSubjects = await listSubject();
-  console.log(items);
-
+  // console.log(items)
   await Promise.all(
-    items.map(async (subject) => {
+    mergedItems.items.map(async (subject) => {
       addSubject(subject);
     })
   );
 
-  
+  const subjects = await getAllSubjects()
+  console.log("subjects length ====> ",subjects.length);
+
   console.timeEnd("main");
+
+  main(mergedItems.cursor)
   // return result;
 };
 

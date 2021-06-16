@@ -1,11 +1,11 @@
 const fetch = require("node-fetch");
+const _ = require("lodash");
 
 const mediaType = ["audio", "texts", "movies", "collection"];
-const fields = ["identifier", "subject", "type"];
-const baseUrl = "https://archive.org/advancedsearch.php";
+const baseUrl = "https://archive.org/services/search/v1/scrape?";
 
-function calcRowsAndPages(numFound) {
-  
+function setDefaults(options, defaults) {
+  return _.defaults({}, _.clone(options), defaults);
 }
 
 const fetchDatas = async (uri) => {
@@ -14,27 +14,28 @@ const fetchDatas = async (uri) => {
   return data;
 };
 
-const rowsFromMediaAndSubject = (
-  options = {
-    fields: ["identifier", "subject"],
+const rowsFromMediaAndSubject = (options) => {
+  const defaults = {
+    fields: "identifier, subject",
     mediaType: "audio",
-    page: 1,
-    rows: 100,
-  }
-) => {
-  const query = `mediatype:${options.mediaType}+AND+_exists_:subject`;
-  const returnedFields = options.fields
-    .map((field) => `&fl[]=${field}`)
-    .join("");
-  const queryConfig = `&rows=${options.rows}&page=${options.page}&output=json&save=yes`;
+    cursor: "",
+  };
 
-  const uri = encodeURI(`${baseUrl}?q=${query}${returnedFields}${queryConfig}`);
+  options = setDefaults(options, defaults);
+
+  console.log(options);
+  const query = `mediatype:${options.mediaType}+AND+_exists_:subject`;
+  let cursorPart = "";
+  if (options.cursor.length > 0) cursorPart = `&cursor=${options.cursor}`;
+  const uri = encodeURI(
+    `${baseUrl}q=${query}&fields=${options.fields}&count=100${cursorPart}`
+  );
 
   return uri;
 };
 
-const getRawPage = async (pageNum) => {
-  const uri = rowsFromMediaAndSubject({ page: pageNum });
+const getRawPage = async (options = {}) => {
+  const uri = rowsFromMediaAndSubject(options);
   const items = await fetchDatas(uri);
 
   return items;
