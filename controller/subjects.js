@@ -1,52 +1,79 @@
+const path = require("path");
+const Datastore = require("nedb"),
+  db = new Datastore({
+    filename: path.resolve("./datastore.db"),
+    autoload: true,
+  });
+
+db.ensureIndex({fieldName: 'subject', unique:true})
+
+
+// console.log(db)
+// POST add subjects from /api/subjects
+const addSubject = (subject) => {
+  return new Promise((resolve, reject) => {
+    db.insert({subject: subject}, (err, newDoc) => {
+      if (err) {
+        if (err.errorType === "uniqueViolated") {
+          return resolve(err.message);
+        }
+        return reject(err);
+      }
+      console.log(newDoc);
+      return resolve(newDoc);
+    });
+  });
+};
 
 // GET all subjects from /api/subjects
-const getAllSubjects = async(req, rep) => {
-    return blog
-} 
+const getAllSubjects = async () => {
+  return new Promise((resolve, reject) => {
+    db.find({}, (err, docs) => {
+      if (err) return reject(err);
+
+      return resolve(docs);
+    });
+  });
+};
 
 // GET one subjects from /api/subjects
-const getOneSubject= async(req,rep) => {
-    const name = req.params.name
-    const subject = subjects.find(sub => sub.name == name)
-    return subject
-}
+const getSubjects = async (searchedString) => {
+  return new Promise((resolve, reject) => {
+    const regex = new RegExp(`${searchedString}`.trim());
+    console.log(regex)
+    db.find({ subject: regex }, (err, docs) => {
+      if (err) return reject(err);
 
-
-// POST add subjects from /api/subjects
-const addSubject = (re,rep) => {
-    const name = `${subjects.length +1}`
-    const newSubject = {
-        name,
-        count: req.body.count
-    }
-    blogs.push(newSubject)
-    return newSubject
-}
-
+      return resolve(docs);
+    });
+  });
+};
 
 // PUT update subjects from /api/subjects
-const updateSubject = async (req, reply) => {
-    const name = req.params.name
-    subjects = subjects.map(subject => {
-        if (subject.name === name) {
-            return {
-                name,
-                count: req.body.count
-            }
-        }
-    })
-
-    return {
-        name,
-        count: req.body.count
-    }
-}
-
+const updateSubject = async (query, update) => {
+  return new Promise((resolve, reject) => {
+    db.update(query, update, {}, (err, numReplaced) => {
+      if (err) return reject(err);
+      return resolve(numReplaced);
+    });
+  });
+};
 
 // DELETE subject from /api/subjects
-const deleteBlog = async (req, reply) => {
-    const name = req.params.name
+const deleteSubject = async (query) => {
+  return new Promise((resolve, reject) => {
+    db.remove(query, {}, (err, numRemoved) => {
+      if (err) return reject(err);
 
-    subjects = subjects.filter(subject => subject.name !== name)
-    return { msg: `Blog with ID ${name} is deleted` }
-}
+      return resolve(numRemoved);
+    });
+  });
+};
+
+module.exports = {
+  getAllSubjects,
+  getSubjects,
+  addSubject,
+  updateSubject,
+  deleteSubject,
+};
