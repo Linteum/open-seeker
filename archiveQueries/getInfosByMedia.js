@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 const _ = require("lodash");
 
-const mediaType = ["audio", "texts", "movies", "collection"];
+// const mediaType = ["audio", "texts", "movies", "collection"];
 const baseUrl = "https://archive.org/services/search/v1/scrape?";
 
 function setDefaults(options, defaults) {

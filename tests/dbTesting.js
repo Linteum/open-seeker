@@ -1,8 +1,8 @@
 
-const subOps = require('../controller/subjects')
+const {getSubjects} = require('../controller/subjects')
 
 async function main () {
-    const toto = await  subOps.getSubjects('radio')
+    const toto = await getSubjects('japan')
     console.log(toto)
 }
 

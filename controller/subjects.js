@@ -1,7 +1,7 @@
 const path = require("path");
-const Datastore = require("nedb"),
-  db = new Datastore({
-    filename: path.resolve("./databases/datastore.db"),
+const  Datastore = require("nedb")
+var  db = new Datastore({
+    filename: '../database/subjects.db',
     autoload: true,
   });
 
@@ -18,8 +18,20 @@ const addSubject = (subject) => {
         }
         return reject(err);
       }
-      // console.log(newDoc);
       return resolve(newDoc);
+    });
+  });
+};
+
+// GET one subjects from /api/subjects
+const getSubjects = async (searchString) => {
+  return new Promise((resolve, reject) => {
+    const regex = new RegExp(searchString.trim());
+    console.log(regex);
+    db.find({subject:regex}, (err, docs) => {
+      if (err) return reject(err);
+
+      return resolve(docs);
     });
   });
 };
@@ -35,22 +47,7 @@ const getAllSubjects = async () => {
   });
 };
 
-// GET one subjects from /api/subjects
-const getSubjects = async (searchString) => {
-  return new Promise((resolve, reject) => {
-    const regex = new RegExp(searchString.trim());
-    
-    console.log(regex);
-    
 
-    db.find({ subject: regex },{}, (err, docs) => {
-
-      if (err) return reject(err);
-      return resolve(docs);
-
-    });
-  });
-};
 
 // PUT update subjects from /api/subjects
 const updateSubject = async (query, update) => {

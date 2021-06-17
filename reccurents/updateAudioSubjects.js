@@ -20,10 +20,11 @@ const main = async (cursor = '') => {
 
   const subjects = await getAllSubjects()
   console.log("subjects length ====> ",subjects.length);
+  console.log("subject ====> ",subjects);
 
   console.timeEnd("main");
 
-  main(mergedItems.cursor)
+  // main(mergedItems.cursor)
   // return result;
 };
 
