@@ -1,0 +1,6 @@
+{
+    "python.formatting.provider": "black",
+    "[art]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
+}
