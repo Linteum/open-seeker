@@ -8,7 +8,9 @@
     
       <div id="main">
         <h1>open-Seeker </h1>
-        <input type="text">
+        <input type="checkbox" name="and" checked>
+        <input id="browse_bar" type="text">
+        <input id="add_tag" type="button" value="add-tag">
         <div id ="tags"></div>
       </div>
 
