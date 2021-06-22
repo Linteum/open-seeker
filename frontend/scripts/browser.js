@@ -9,7 +9,7 @@ function addDiv(className, parentDiv) {
 }
 
 function existingTags(tags, value) {
-  if (Object.values(tags).find((tag) => tag.innerHTML.trim() == value.trim()))
+  if (Object.values(tags).find((tag) => tag.name.trim() == value.trim()))
     return true;
 
   return false;
@@ -17,12 +17,15 @@ function existingTags(tags, value) {
 
 function pushTag(value) {
   const tags = document.getElementById("tags");
-
   const tagsList = document.querySelectorAll(".tag");
+  
 
   if (!existingTags(tagsList, value)) {
     const tag = addDiv("tag", tags)
     tag.innerHTML = value.trim();
+    tag.name = value.trim()
+    addDiv("remove-btn", tag)
+
   }
 }
 
