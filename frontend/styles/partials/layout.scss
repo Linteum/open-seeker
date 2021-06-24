@@ -1,13 +1,30 @@
-#tags{
-    display:flex;
+#tags {
+  display: flex;
+}
+input::-webkit-calendar-picker-indicator {
+	display: none !important;
+}
 
+.ok-icon {
+  display: flex;
+}
+
+.remove-icon {
+  display: none;
+}
+
+.tag:hover {
+  .ok-icon {
+    display: none;
+  }
+  .remove-icon {
+    display: flex;
+  }
 }
 
 .tag {
-    display:flex;
-  align-items:center;
-    
-  padding :7px;
-  margin:5px;
-  
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  margin: 5px;
 }

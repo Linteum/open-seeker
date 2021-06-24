@@ -1,21 +1,37 @@
 const path = require("path");
 const sass = require("node-sass");
+const minify = require("minify");
 const fs = require("fs");
+
+const paths = {
+  css: {
+    input: "./frontend/styles/index.scss",
+    output: "./source/public/style.css",
+  },
+};
+
+const minifyOptions = {
+  css: {
+    compatibility: "*",
+  },
+};
 
 sass.render(
   {
-    file: "./frontend/styles/index.scss",
+    file: paths.css.input,
   },
   async (err, result) => {
     if (err) {
       console.log("scss error: " + err.message);
       throw err;
     } else {
-      fs.writeFileSync(
-        "./source/public/style.css",
-        result.css.toString("utf8")
-      );
+      fs.writeFileSync(paths.css.output, result.css.toString("utf8"));
       console.log("scss compiled");
+
+      console.log("minifying css");
+      minify(paths.css.output, minifyOptions)
+        .then((data) => fs.writeFileSync(paths.css.output, data))
+        .catch(console.log);
       console.log("compiling js");
 
       const webpack = require("webpack");

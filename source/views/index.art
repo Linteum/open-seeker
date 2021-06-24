@@ -9,7 +9,10 @@
       <div id="main">
         <h1>open-Seeker </h1>
         <input type="checkbox" name="and" checked>
-        <input id="browse_bar" type="text">
+        <input list="genres" id="browse_bar" type="text">
+        <datalist id="genres">
+          <option value="essai"></option>
+        </datalist>
         <input id="add_tag" type="button" value="add-tag">
         <div id ="tags"></div>
       </div>

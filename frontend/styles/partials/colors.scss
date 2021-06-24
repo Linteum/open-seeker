@@ -1,14 +1,18 @@
-$tag-background : rgba(142, 185, 143,0.5);
-$tag-color:#3F6440;
-
-
+$tag-background: rgba(142, 185, 143, 0.5);
+$tag-color: #3f6440;
 
 .tag {
-    color: $tag-color;
-    background-color: $tag-background ;
-    border:3px solid $tag-color;
+  color: $tag-color;
+  background-color: $tag-background;
+  border: 2px solid $tag-color;
 }
 
-.remove-btn{
-    background-color:$tag-color;
+.interact-icon {
+  line {
+    stroke: $tag-color;
+  }
+
+  polyline {
+    stroke: $tag-color;
+  }
 }
