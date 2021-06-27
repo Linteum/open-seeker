@@ -8,13 +8,15 @@
     
       <div id="main">
         <h1>open-Seeker </h1>
+        <div id ="tags"></div>
         <input type="checkbox" name="and" checked>
+        <input id="add_tag" type="button" value="add-tag">
         <input list="genres" id="browse_bar" type="text">
         <datalist id="genres">
           <option value="essai"></option>
         </datalist>
-        <input id="add_tag" type="button" value="add-tag">
-        <div id ="tags"></div>
+        
+        <input type="button" value="Search">
       </div>
 
     <script src="/public/js/app.js"></script>

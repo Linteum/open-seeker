@@ -1,6 +1,20 @@
 const { icons } = require("../components");
-
+const openSeekerEndPoint = "https://127.0.0.1:4444/";
 const browseBar = document.getElementById("browse_bar");
+
+async function getGenres(str) {
+  const queryString = encodeURIComponent(str.trim())
+
+  const res = await fetch(`${openSeekerEndPoint}tags?genres=${queryString}`);
+  console.log(res)
+  if (res.ok) {
+    const data = await res.text();
+    console.log(data) 
+    // return data
+    return "true"
+  }
+  return "false";
+}
 
 function addDiv(parentDiv, classNames = []) {
   const div = document.createElement("div");
@@ -38,19 +52,41 @@ function pushTag(value) {
   return document.querySelectorAll(".tag");
 }
 
-document.getElementById("add_tag").addEventListener("click", (e) => {
+function enterValue() {
   const value = browseBar.value.trim();
   if (value && value.length > 0) {
     const tags = pushTag(value);
     updateRmEvent(tags);
+  }
+  browseBar.value = "";
+}
+
+// addevent listeners
+
+browseBar.addEventListener("input", async (e) => {
+  // console.log(e.target.value);
+  const genres = await getGenres(e.target.value);
+  console.log(genres);
+});
+document.getElementById("add_tag").addEventListener("click", (e) => {
+  enterValue();
+});
+
+browseBar.addEventListener("keydown", (e) => {
+  switch (e.code) {
+    case "ControlRight":
+      enterValue();
+      break;
+    case "Enter":
+      // launch research
+      break;
   }
 });
 
 function updateRmEvent(divList) {
   divList.forEach((tag) => {
     tag.addEventListener("click", (e) => {
-
-      if (tag.parentNode)tag.parentNode.removeChild(tag);
+      if (tag.parentNode) tag.parentNode.removeChild(tag);
     });
   });
 }
