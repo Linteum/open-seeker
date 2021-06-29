@@ -15,7 +15,7 @@
         <datalist id="genres">
         </datalist>
         
-        <input type="button" value="Search">
+        <input type="button" value="Search" id="research">
       </div>
 
     <script src="/public/js/app.js"></script>
