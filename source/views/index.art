@@ -13,7 +13,6 @@
         <input id="add_tag" type="button" value="add-tag">
         <input list="genres" id="browse_bar" type="text">
         <datalist id="genres">
-          <option value="essai"></option>
         </datalist>
         
         <input type="button" value="Search">

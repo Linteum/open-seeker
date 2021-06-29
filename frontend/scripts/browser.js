@@ -1,19 +1,19 @@
 const { icons } = require("../components");
-const openSeekerEndPoint = "https://127.0.0.1:4444/";
+const openSeekerEndPoint = "http://localhost:8000/api/tags";
 const browseBar = document.getElementById("browse_bar");
 
 async function getGenres(str) {
   const queryString = encodeURIComponent(str.trim())
 
-  const res = await fetch(`${openSeekerEndPoint}tags?genres=${queryString}`);
-  console.log(res)
+  const res = await fetch(`${openSeekerEndPoint}?genres=${queryString}`);
+  // console.log(res)
   if (res.ok) {
-    const data = await res.text();
-    console.log(data) 
-    // return data
-    return "true"
+    const data = await res.json();
+    if (data.genres) return data.genres
+    return []
+    
   }
-  return "false";
+  return false;
 }
 
 function addDiv(parentDiv, classNames = []) {
@@ -61,12 +61,22 @@ function enterValue() {
   browseBar.value = "";
 }
 
+function updateOptions(parentList, values) {
+  parentList.innerHTML = ""
+  for (let value of values) {
+    const opt = document.createElement('option')
+    opt.value = value
+    parentList.appendChild(opt)
+  }
+}
+
 // addevent listeners
 
 browseBar.addEventListener("input", async (e) => {
   // console.log(e.target.value);
   const genres = await getGenres(e.target.value);
-  console.log(genres);
+  updateOptions(document.getElementById("genres"), genres)
+
 });
 document.getElementById("add_tag").addEventListener("click", (e) => {
   enterValue();

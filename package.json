@@ -21,6 +21,7 @@
     "nedb": "^1.8.0",
     "node-fetch": "^2.6.1",
     "point-of-view": "^4.15.0",
+    "redbird": "^0.10.0",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
