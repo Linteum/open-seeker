@@ -13,3 +13,11 @@ todo :
   - link account with archive.org (favorites, playlists)
 
 add arango or any noSql db table sdk for node (done)
+
+## affichage post recherche =>
+
+thumbnail si il y a
+nom album
+nom artiste
+tracks 
+

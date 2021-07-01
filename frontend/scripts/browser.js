@@ -2,7 +2,6 @@ const { icons } = require("../components");
 const openSeekerEndPoint = "http://localhost:8000/api/tags";
 const browseBar = document.getElementById("browse_bar");
 
-
 async function getGenres(str) {
   const queryString = encodeURIComponent(str.trim());
 
@@ -96,57 +95,84 @@ function getTagList() {
 }
 
 async function getIdsFromAO(uri) {
-  const res = await fetch(uri)
+  const res = await fetch(uri);
   if (res.ok) {
-    const data = await res.json()
+    const data = await res.json();
 
-    return data.items
+    return data.items;
   }
-  return false
+  return false;
 }
 
-async function getMetaFromId (id) {
-  const res = await fetch(`https://archive.org/metadata/${id}`)
+async function getMetaFromId(id) {
+  const res = await fetch(`https://archive.org/metadata/${id}`);
 
   if (res.ok) {
-    const data = await res.json()
-    return data
-    // console.log(data)
+    const data = await res.json();
+    return data;
   }
-  return false
+  return false;
 }
 
-function reformatAOItems() {
 
-} 
-
-function getThumbsFromAOItems (items) {
-  // console.log(items)
-  const thumbs = items.map(item => {
-    const files = item.files
-
-    const thumb = files.find(file => {
-      return file.format.includes("JPEG Thumb") || file.format.includes("Item Tile") 
-    })
+const aOItem = {
+  getTracks: (item) => {
+    const files = item.files;
+    const tracks = files.filter((file) => file.format.includes("MP3"));
+    return tracks.map((file, index) => {
+      return {
+        name: file.name,
+        dms: parseFloat(file.length) * 1000,
+        trackNum: file.track || `${index + 1}`,
+      };
+    });
+  },
+  getThumb: (item) => {
+    // console.log(items)
+    const files = item.files;
+    const thumb = files.find((file) => {
+      return (
+        file.format.includes("JPEG Thumb") || file.format.includes("Item Tile")
+      );
+    });
     // console.log(thumb)
-    if (thumb) return `${item.d1}${item.dir}/${thumb.name}`
-    return ''
-  })
+    if (thumb)
+      return { name: thumb.name };
+    return {};
+  },
+  reformat: (item) => {
+    const result = {
+      path1: `${item.d1}${item.dir}/`,
+      path2:`${item.d2}${item.dir}/`,
+      thumbnail: aOItem.getThumb(item),
+      title: item.metadata.title,
+      uploader: item.metadata.uploader,
+      upload_date: item.metadata.addeddate,
+      tracks: aOItem.getTracks(item),
+      tags: item.metadata.subject,
+    };
+    console.log(result);
+    return result;
+  },
+  spawnThumb: (parentDiv,metas) => {}
+};
 
-  return thumbs
+
+
+// function reformatAOItem
+
+// function getThumbObj
+
+async function itemAOHandler(item) {
+  const metas = await getMetaFromId(item.identifier);
+  const formated = aOItem.reformat(metas);
+  createThumb()
 }
 async function research() {
   const tags = getTagList();
   const uri = formatSearchQuery(tags);
-  const names = await getIdsFromAO(uri)
-  const items = await Promise.all(names.map(item => {
-    return getMetaFromId(item.identifier)
-  }))
-
-  // console.log(items[0])
-  const thumbs = getThumbsFromAOItems(items)
-
-  // console.log(thumbs);
+  const names = await getIdsFromAO(uri);
+  const items = names.map(itemAOHandler);
 }
 // ia601901.us.archive.org/32/items/001WeedProblem/001.mp3
 // addevent listeners
