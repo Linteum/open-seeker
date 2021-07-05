@@ -1,7 +1,8 @@
 const { icons } = require("../components");
-const { create, qs, qsA, getById } = require("../libraries/doman");
+const { create, addEvent } = require("../libraries/doman");
 const openSeekerEndPoint = "http://localhost:8000/api/tags";
 const browseBar = document.getElementById("browse_bar");
+var currentCursor = "";
 
 async function getGenres(str) {
   const queryString = encodeURIComponent(str.trim());
@@ -100,7 +101,7 @@ async function getIdsFromAO(uri) {
   if (res.ok) {
     const data = await res.json();
 
-    return data.items;
+    return data;
   }
   return false;
 }
@@ -159,21 +160,24 @@ const aOItem = {
 
 function spawnThumb(parentDiv, metas) {
   const album = create("div");
-  album.classList.add('album')
+  album.classList.add("album");
   const wrapper = create("div");
-  wrapper.classList.add("album-wrapper")
+  wrapper.classList.add("album-wrapper");
   const thumbnail = create("div");
-  thumbnail.classList.add("thumbnail")
+  thumbnail.classList.add("thumbnail");
   const playBtn = create("div");
-  playBtn.classList.add('player-btn')
+  playBtn.classList.add("player-btn");
   const img = create("img");
-  img.classList.add('thumb-img')
+  img.classList.add("thumb-img");
   img.src = metas.path1 + metas.thumbnail || "default";
   img.alt = "none";
 
   const link = create("div");
-  link.classList.add("link-wrapper")
-  link.dataset.link = metas.item_page;
+  link.classList.add("link-wrapper");
+  // link.dataset.link = metas.item_page;
+  addEvent(link, "click", (e) => {
+    window.open(metas.item_page, "_blank");
+  });
   const title = create("div");
   title.innerHTML = metas.title;
   const author = create("div");
@@ -194,16 +198,26 @@ function spawnThumb(parentDiv, metas) {
 
 // function getThumbObj
 
-async function itemAOHandler(item) {
-  const metas = await getMetaFromId(item.identifier);
-  const formated = aOItem.reformat(metas);
-  spawnThumb(document.getElementById("albums"), formated);
+function itemAOHandler(data, reset) {
+  const wrapper = document.getElementById("albums");
+  if (reset) wrapper.innerHTML = "";
+
+  if (Array.isArray(data.items)) {
+    data.items.map(async (item) => {
+      const metas = await getMetaFromId(item.identifier);
+      const formated = aOItem.reformat(metas);
+      spawnThumb(wrapper, formated);
+    });
+  }
+  console.log(data.cursor);
+  currentCursor = data.cursor;
 }
-async function research() {
+async function research(reset = true) {
   const tags = getTagList();
   const uri = formatSearchQuery(tags);
-  const names = await getIdsFromAO(uri);
-  const items = names.map(itemAOHandler);
+  const data = await getIdsFromAO(uri);
+  itemAOHandler(data, reset);
+  // const items = names.map(itemAOHandler);
 }
 // ia601901.us.archive.org/32/items/001WeedProblem/001.mp3
 // addevent listeners
@@ -222,13 +236,13 @@ document.getElementById("research").addEventListener("click", (e) => {
 });
 
 browseBar.addEventListener("keydown", (e) => {
-  switch (e.code) {
-    case "ControlRight":
+  if (e.code == "Enter") {
+    const value = browseBar.value.trim();
+    if (value.length > 0) {
       enterValue();
-      break;
-    case "Enter":
+    } else {
       research();
-      break;
+    }
   }
 });
 

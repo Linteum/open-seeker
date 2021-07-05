@@ -14,9 +14,14 @@ function getById(id, parent = document) {
   return parent.getElementById(id);
 }
 
+function addEvent (el,evt, cb) {
+    el.addEventListener(evt,cb)
+}
+
 module.exports = {
   create,
   qs,
   qsA,
   getById,
+  addEvent
 };
