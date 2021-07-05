@@ -17,6 +17,7 @@
         
         <input type="button" value="Search" id="research">
         <div id="albums"></div>
+        <div id="next-btn"></div>
 
       </div>
 

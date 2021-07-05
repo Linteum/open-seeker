@@ -1,14 +1,13 @@
 const { icons } = require("../components");
-const { create, addEvent } = require("../libraries/doman");
+const { create, addEvent, getById, qs } = require("../libraries/doman");
 const openSeekerEndPoint = "http://localhost:8000/api/tags";
 const browseBar = document.getElementById("browse_bar");
-var currentCursor = "";
+var currentCursor = false;
 
 async function getGenres(str) {
   const queryString = encodeURIComponent(str.trim());
 
   const res = await fetch(`${openSeekerEndPoint}?genres=${queryString}`);
-  // console.log(res)
   if (res.ok) {
     const data = await res.json();
     if (data.genres) return data.genres;
@@ -77,15 +76,19 @@ function formatSearchQuery(tags, andMode = true) {
     mediaType: "audio",
     rows: "128",
     uri: "https://archive.org/services/search/v1/scrape",
-    cursor: "",
+    cursor:'' 
   };
+
   options.query = `mediatype:${options.mediaType}`;
   for (let tag of tags) {
     if (andMode) options.query += `+AND+subject:"${tag}"`;
   }
+
+  if (currentCursor) options.cursor = `&cursor=${currentCursor}`
   const uri = encodeURI(
     `${options.uri}?q=${options.query}&fields=${options.fields}&count=${options.rows}${options.cursor}`
   );
+  console.log(uri);
   return uri;
 }
 
@@ -129,14 +132,12 @@ const aOItem = {
     });
   },
   getThumb: (item) => {
-    // console.log(items)
     const files = item.files;
     const thumb = files.find((file) => {
       return (
         file.format.includes("JPEG Thumb") || file.format.includes("Item Tile")
       );
     });
-    // console.log(thumb)
     if (thumb) return thumb.name;
     return false;
   },
@@ -153,7 +154,7 @@ const aOItem = {
       tags: item.metadata.subject,
       item_page: `https://archive.org/details/${item.metadata.identifier}`,
     };
-    console.log(result);
+    // console.log(result);
     return result;
   },
 };
@@ -198,9 +199,11 @@ function spawnThumb(parentDiv, metas) {
 
 // function getThumbObj
 
-function itemAOHandler(data, reset) {
+function itemAOHandler(data) {
   const wrapper = document.getElementById("albums");
-  if (reset) wrapper.innerHTML = "";
+  // const itemFounded = create("div");
+  // itemFounded.innerHTML = `we found ${data.total} items on archive org`;
+  // wrapper.appendChild(itemFounded);
 
   if (Array.isArray(data.items)) {
     data.items.map(async (item) => {
@@ -209,14 +212,29 @@ function itemAOHandler(data, reset) {
       spawnThumb(wrapper, formated);
     });
   }
-  console.log(data.cursor);
+
+  const next = getById("next-btn");
+  next.innerHTML = "NEXT";
+
+  addEvent(next, "click", () => {
+    research(false);
+  });
+  console.log("current cursor", currentCursor);
+  console.log(data);
   currentCursor = data.cursor;
+  console.log("current cursor after", currentCursor);
 }
+
+
 async function research(reset = true) {
+  if (reset) {
+    qs('#albums').innerHTML = "";
+    currentCursor = false;
+  }
   const tags = getTagList();
   const uri = formatSearchQuery(tags);
   const data = await getIdsFromAO(uri);
-  itemAOHandler(data, reset);
+  itemAOHandler(data);
   // const items = names.map(itemAOHandler);
 }
 // ia601901.us.archive.org/32/items/001WeedProblem/001.mp3
