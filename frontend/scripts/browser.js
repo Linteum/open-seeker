@@ -1,4 +1,5 @@
 const { icons } = require("../components");
+const { create, qs, qsA, getById } = require("../libraries/doman");
 const openSeekerEndPoint = "http://localhost:8000/api/tags";
 const browseBar = document.getElementById("browse_bar");
 
@@ -114,7 +115,6 @@ async function getMetaFromId(id) {
   return false;
 }
 
-
 const aOItem = {
   getTracks: (item) => {
     const files = item.files;
@@ -136,28 +136,59 @@ const aOItem = {
       );
     });
     // console.log(thumb)
-    if (thumb)
-      return { name: thumb.name };
-    return {};
+    if (thumb) return thumb.name;
+    return false;
   },
   reformat: (item) => {
     const result = {
-      path1: `${item.d1}${item.dir}/`,
-      path2:`${item.d2}${item.dir}/`,
+      path1: `https://${item.d1}${item.dir}/`,
+      path2: `https://${item.d2}${item.dir}/`,
       thumbnail: aOItem.getThumb(item),
       title: item.metadata.title,
+      id: item.metadata.identifier,
       uploader: item.metadata.uploader,
       upload_date: item.metadata.addeddate,
       tracks: aOItem.getTracks(item),
       tags: item.metadata.subject,
+      item_page: `https://archive.org/details/${item.metadata.identifier}`,
     };
     console.log(result);
     return result;
   },
-  spawnThumb: (parentDiv,metas) => {}
 };
 
+function spawnThumb(parentDiv, metas) {
+  const album = create("div");
+  album.classList.add('album')
+  const wrapper = create("div");
+  wrapper.classList.add("album-wrapper")
+  const thumbnail = create("div");
+  thumbnail.classList.add("thumbnail")
+  const playBtn = create("div");
+  playBtn.classList.add('player-btn')
+  const img = create("img");
+  img.classList.add('thumb-img')
+  img.src = metas.path1 + metas.thumbnail || "default";
+  img.alt = "none";
 
+  const link = create("div");
+  link.classList.add("link-wrapper")
+  link.dataset.link = metas.item_page;
+  const title = create("div");
+  title.innerHTML = metas.title;
+  const author = create("div");
+  author.innerHTML = metas.uploader;
+
+  parentDiv.appendChild(album);
+  album.appendChild(wrapper);
+  wrapper.appendChild(thumbnail);
+  thumbnail.appendChild(playBtn);
+  thumbnail.appendChild(img);
+
+  wrapper.appendChild(link);
+  link.appendChild(title);
+  link.appendChild(author);
+}
 
 // function reformatAOItem
 
@@ -166,7 +197,7 @@ const aOItem = {
 async function itemAOHandler(item) {
   const metas = await getMetaFromId(item.identifier);
   const formated = aOItem.reformat(metas);
-  createThumb()
+  spawnThumb(document.getElementById("albums"), formated);
 }
 async function research() {
   const tags = getTagList();

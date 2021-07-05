@@ -16,6 +16,8 @@
         </datalist>
         
         <input type="button" value="Search" id="research">
+        <div id="albums"></div>
+
       </div>
 
     <script src="/public/js/app.js"></script>
