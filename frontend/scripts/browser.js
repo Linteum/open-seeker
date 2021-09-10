@@ -4,6 +4,22 @@ const openSeekerEndPoint = "http://localhost:8000/api/tags";
 const browseBar = document.getElementById("browse_bar");
 var currentCursor = false;
 
+function getQueryParams() {
+  const qs = window.location.search
+  const stringParams = new URLSearchParams(qs)
+  const params = stringParams.get("tags").split(",")
+  console.log(params)
+  return params
+}
+
+const params = getQueryParams()
+
+if (params.length>0) {
+  for (let param of params) {
+    pushTag(param)
+  }
+}
+
 async function getGenres(str) {
   const queryString = encodeURIComponent(str.trim());
 
@@ -52,8 +68,8 @@ function pushTag(value) {
   return document.querySelectorAll(".tag");
 }
 
-function enterValue() {
-  const value = browseBar.value.trim();
+function enterValue(value) {
+   value = value.trim();
   if (value && value.length > 0) {
     const tags = pushTag(value);
     updateRmEvent(tags);
@@ -70,18 +86,19 @@ function updateOptions(parentList, values) {
   }
 }
 
+
 function formatSearchQuery(tags, andMode = true) {
   const options = {
     fields: "identifier",
     mediaType: "audio",
-    rows: "128",
+    rows: "130",
     uri: "https://archive.org/services/search/v1/scrape",
-    cursor:'' 
+    cursor: ''
   };
 
   options.query = `mediatype:${options.mediaType}`;
   for (let tag of tags) {
-    if (andMode) options.query += `+AND+subject:"${tag}"`;
+    if (andMode) options.query += `+AND+subject:"*${tag}*"`;
   }
 
   if (currentCursor) options.cursor = `&cursor=${currentCursor}`
@@ -154,16 +171,16 @@ const aOItem = {
       tags: item.metadata.subject,
       item_page: `https://archive.org/details/${item.metadata.identifier}`,
     };
-    // console.log(result);
+    console.log(result);
     return result;
   },
 };
 
+
+
 function spawnThumb(parentDiv, metas) {
   const album = create("div");
   album.classList.add("album");
-  const wrapper = create("div");
-  wrapper.classList.add("album-wrapper");
   const thumbnail = create("div");
   thumbnail.classList.add("thumbnail");
   const playBtn = create("div");
@@ -181,29 +198,21 @@ function spawnThumb(parentDiv, metas) {
   });
   const title = create("div");
   title.innerHTML = metas.title;
-  const author = create("div");
-  author.innerHTML = metas.uploader;
 
   parentDiv.appendChild(album);
-  album.appendChild(wrapper);
-  wrapper.appendChild(thumbnail);
+  album.appendChild(thumbnail);
   thumbnail.appendChild(playBtn);
   thumbnail.appendChild(img);
 
-  wrapper.appendChild(link);
+  album.appendChild(link);
   link.appendChild(title);
-  link.appendChild(author);
 }
-
-// function reformatAOItem
-
-// function getThumbObj
 
 function itemAOHandler(data) {
   const wrapper = document.getElementById("albums");
-  // const itemFounded = create("div");
-  // itemFounded.innerHTML = `we found ${data.total} items on archive org`;
-  // wrapper.appendChild(itemFounded);
+  const itemFounded = qs("#item-nbr");
+  itemFounded.innerHTML = `we found ${data.total} items on archive org`;
+
 
   if (Array.isArray(data.items)) {
     data.items.map(async (item) => {
@@ -215,7 +224,6 @@ function itemAOHandler(data) {
 
   const next = getById("next-btn");
   next.innerHTML = "NEXT";
-
   addEvent(next, "click", () => {
     research(false);
   });
@@ -231,14 +239,17 @@ async function research(reset = true) {
     qs('#albums').innerHTML = "";
     currentCursor = false;
   }
-  const tags = getTagList();
+  // const tags = getTagList();
+
+  // pour test -----------------
+  const tags = ["folk", "field recording"]
+  // ----------------------
+
   const uri = formatSearchQuery(tags);
   const data = await getIdsFromAO(uri);
   itemAOHandler(data);
   // const items = names.map(itemAOHandler);
 }
-// ia601901.us.archive.org/32/items/001WeedProblem/001.mp3
-// addevent listeners
 
 browseBar.addEventListener("input", async (e) => {
   // console.log(e.target.value);
@@ -246,7 +257,7 @@ browseBar.addEventListener("input", async (e) => {
   updateOptions(document.getElementById("genres"), genres);
 });
 document.getElementById("add_tag").addEventListener("click", (e) => {
-  enterValue();
+  enterValue(browseBar.value);
 });
 
 document.getElementById("research").addEventListener("click", (e) => {
@@ -257,7 +268,7 @@ browseBar.addEventListener("keydown", (e) => {
   if (e.code == "Enter") {
     const value = browseBar.value.trim();
     if (value.length > 0) {
-      enterValue();
+      enterValue(browseBar.value);
     } else {
       research();
     }
@@ -272,6 +283,6 @@ function updateRmEvent(divList) {
   });
 }
 
-function onLoad() {}
+function onLoad() { }
 
 onLoad();

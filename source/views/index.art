@@ -7,15 +7,8 @@
   <body class="container">
     
       <div id="main">
-        <h1>open-Seeker </h1>
-        <div id ="tags"></div>
-        <input type="checkbox" name="and" checked>
-        <input id="add_tag" type="button" value="add-tag">
-        <input list="genres" id="browse_bar" type="text">
-        <datalist id="genres">
-        </datalist>
-        
-        <input type="button" value="Search" id="research">
+        {{include './partials/header'}}
+        <br>
         <div id="albums"></div>
         <div id="next-btn"></div>
 
